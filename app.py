@@ -137,7 +137,7 @@ with gr.Blocks() as app:
                             model_rename = gr.Textbox(placeholder="My-Model", label="Name your model:",value="")
                         with gr.Column():
                             download_button = gr.Button("Download")
-                            download_button.click(fn=download_from_url,inputs=[url,model_rename],outputs=[])
+                            download_button.click(fn=download_from_url,inputs=[url,model_rename],outputs=[url])
         
     with gr.Row():
         with gr.Tabs():
