@@ -53,9 +53,9 @@ for file, link in files.items():
             
 def download_from_url(url, model):
     if url == '':
-        return "URL cannot be left empty."
+        return "URL cannot be left empty.", {"choices":show_available("assets/weights"),"__type__":"update"}
     if model =='':
-        return "You need to name your model. For example: My-Model"
+        return "You need to name your model. For example: My-Model", {"choices":show_available("assets/weights"),"__type__":"update"}
     url = url.strip()
     zip_dirs = ["zips", "unzips"]
     for directory in zip_dirs:
@@ -78,7 +78,7 @@ def download_from_url(url, model):
                 zipfile_path = os.path.join("./zips/",filename)
                 shutil.unpack_archive(zipfile_path, "./unzips", 'zip')
             else:
-                return "No zipfile found."
+                return "No zipfile found.", {"choices":show_available("assets/weights"),"__type__":"update"}
         for root, dirs, files in os.walk('./unzips'):
             for file in files:
                 file_path = os.path.join(root, file)
@@ -89,9 +89,9 @@ def download_from_url(url, model):
                     shutil.copy(file_path,f'./assets/weights/{model}.pth')
         shutil.rmtree("zips")
         shutil.rmtree("unzips")
-        return "Success."
+        return "Success.", {"choices":show_available("assets/weights"),"__type__":"update"}
     except:
-        return "There's been an error."
+        return "There's been an error.", {"choices":show_available("assets/weights"),"__type__":"update"}
             
 def show_available(filepath):
     return os.listdir(filepath)
@@ -137,7 +137,7 @@ with gr.Blocks() as app:
                             model_rename = gr.Textbox(placeholder="My-Model", label="Name your model:",value="")
                         with gr.Column():
                             download_button = gr.Button("Download")
-                            download_button.click(fn=download_from_url,inputs=[url,model_rename],outputs=[url])
+                            download_button.click(fn=download_from_url,inputs=[url,model_rename],outputs=[url,model_picker])
         
     with gr.Row():
         with gr.Tabs():
