@@ -1,8 +1,8 @@
 import os
 
 from fairseq import checkpoint_utils
-#Added logs as index_root
-os.environ['index_root']="logs"
+
+
 def get_index_path_from_model(sid):
     return next(
         (
