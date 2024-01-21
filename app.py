@@ -95,7 +95,13 @@ def download_from_url(url, model):
     except:
         return "There's been an error.", {"choices":show_available("assets/weights"),"__type__":"update"}
             
-def show_available(filepath):
+def show_available(filepath,format=None):
+    if format:
+        files = []
+        for file in os.listdir(filepath):
+            if file in os.listdir(filepath).endswith(format):
+                files.append(file)
+        return files
     return os.listdir(filepath)
   
 def upload_file(file):
@@ -130,7 +136,7 @@ with gr.Blocks() as app:
         with gr.Column():
             with gr.Tabs():
                 with gr.TabItem("1.Choose a voice model:"):
-                    model_picker = gr.Dropdown(label="",choices=show_available('assets/weights'),value='',interactive=True)
+                    model_picker = gr.Dropdown(label="",choices=show_available('assets/weights','.pth'),value='',interactive=True)
                 with gr.TabItem("(Or download a model here)"):
                     with gr.Row():
                         url = gr.Textbox(label="Paste the URL here:",value="",placeholder="(i.e. https://huggingface.co/repo/model/resolve/main/model.zip)")
