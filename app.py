@@ -1,12 +1,13 @@
 import gradio as gr
 import os, shutil
 import subprocess
-
+from datetime import datetime
 os.environ["rmvpe_root"] = "assets/rmvpe"
 os.environ['index_root']="logs"
 os.environ['weight_root']="assets/weights"
 
 def convert(audio_picker,model_picker):
+    now = datetime.now().strftime("%d%m%Y%H%M%S")
     command = [
         "python",
         "tools/infer_cli.py",
@@ -14,11 +15,10 @@ def convert(audio_picker,model_picker):
         "--input_path", f"audios/{audio_picker}",
         "--index_path", f"logs/{model_picker}/*.index",
         "--f0method", "rmvpe",
-        "--opt_path", "cli_output.wav",
+        "--opt_path", f"audios/cli_output_{now}.wav",
         "--model_name", f"{model_picker}",
         "--index_rate", "0.8",
         "--device", "cpu",
-        "--is_half", "False",
         "--filter_radius", "3",
         "--resample_sr", "0",
         "--rms_mix_rate", "0.21",
