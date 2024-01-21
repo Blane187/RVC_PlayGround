@@ -7,6 +7,7 @@ os.environ['index_root']="logs"
 os.environ['weight_root']="assets/weights"
 
 def convert(audio_picker,model_picker):
+    gr.Warning("Your audio is being converted. Please wait.")
     now = datetime.now().strftime("%d%m%Y%H%M%S")
     command = [
         "python",
@@ -26,11 +27,12 @@ def convert(audio_picker,model_picker):
     ]
 
     try:
-        process = subprocess.Popen(command)
-        process.wait()  # Wait for the subprocess to finish
+        process = subprocess.run(command, check=True)
         print("Script executed successfully.")
+        return {"choices":show_available("audios"),"__type__":"update","value":f"cli_output_{now}.wav"},f"audios/cli_output_{now}.wav"
     except subprocess.CalledProcessError as e:
         print(f"Error: {e}")
+        return {"choices":show_available("audios"),"__type__":"update"}, None
 
 assets_folder = "assets"
 if not os.path.exists(assets_folder):
@@ -149,9 +151,9 @@ with gr.Blocks() as app:
         audio_refresher = gr.Button("Refresh")
         audio_refresher.click(fn=refresh,inputs=[],outputs=[audio_picker,model_picker])
         convert_button = gr.Button("Convert")
-        convert_button.click(convert, inputs=[audio_picker,model_picker])
     with gr.Row():
         audio_player = gr.Audio()
         audio_picker.change(fn=update_audio_player, inputs=[audio_picker],outputs=[audio_player])
+        convert_button.click(convert, inputs=[audio_picker,model_picker],outputs=[audio_picker,audio_player])
 
 app.queue().launch()
