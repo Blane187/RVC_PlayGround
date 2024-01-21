@@ -97,36 +97,38 @@ def download_from_url(url, model):
             
 def show_available(filepath,format=None):
     if format:
+        print(f"Format: {format}")
         files = []
         for file in os.listdir(filepath):
-            if file in os.listdir(filepath).endswith(format):
+            if file.endswith(format):
+                print(f"Matches format: {file}")
                 files.append(file)
+            else:
+                print(f"Does not match format: {file}")
+        print(f"Matches: {files}")
         return files
     return os.listdir(filepath)
   
 def upload_file(file):
     audio_formats = ['.wav', '.mp3', '.ogg', '.flac', '.aac']
-    _, ext = os.path.splitext(file.name)
-    filename = os.path.basename(file.name)
-    file_path = file.name
+    try:
+        _, ext = os.path.splitext(file.name)
+        filename = os.path.basename(file.name)
+        file_path = file.name
+    except AttributeError:
+        _, ext = os.path.splitext(file)
+        filename = os.path.basename(file)
+        file_path = file
     if ext.lower() in audio_formats:
         if os.path.exists(f'audios/{filename}'): 
             os.remove(f'audios/{filename}')
         shutil.move(file_path,'audios')
-    elif ext.lower().endswith('.pth'):
-        if os.path.exists(f'assets/weights/{filename}'): 
-            os.remove(f'assets/weights/{filename}')
-        shutil.move(file_path,'assets/weights')
-    elif ext.lower().endswith('.index'):
-        if os.path.exists(f'logs/{filename}'): 
-            os.remove(f'logs/{filename}')
-        shutil.move(file_path,'logs')
     else:
         gr.Warning('File incompatible')
-    return {"choices":show_available('audios'),"__type__": "update"},{"choices":show_available('assets/weights'),"__type__": "update"},None
+    return {"choices":show_available('audios'),"__type__": "update","value":filename}
 
 def refresh():
-    return {"choices":show_available('audios'),"__type__": "update"},{"choices":show_available('assets/weights'),"__type__": "update"}
+    return {"choices":show_available("audios"),"__type__": "update"},{"choices":show_available("assets/weights",".pth"),"__type__": "update"}
 
 def update_audio_player(choice):
     return os.path.join("audios",choice)
@@ -150,10 +152,12 @@ with gr.Blocks() as app:
     with gr.Row():
         with gr.Tabs():
             with gr.TabItem("2.Choose an audio file:"):
+                recorder = gr.Microphone(label="Record audio here...",type='filepath')
                 audio_picker = gr.Dropdown(label="",choices=show_available('audios'),value='',interactive=True)
+                recorder.stop_recording(upload_file, inputs=[recorder],outputs=[audio_picker])
             with gr.TabItem("(Or upload a new file here)"):
-                dropbox = gr.File(label="Drop an audio here. (You can also drop a .pth or .index file here)")
-                dropbox.upload(fn=upload_file, inputs=[dropbox],outputs=[audio_picker,model_picker,dropbox])
+                dropbox = gr.Audio(label="Drop an audio here.",sources=['upload'])
+                dropbox.upload(fn=upload_file, inputs=[dropbox],outputs=[audio_picker])
         audio_refresher = gr.Button("Refresh")
         audio_refresher.click(fn=refresh,inputs=[],outputs=[audio_picker,model_picker])
         convert_button = gr.Button("Convert")
