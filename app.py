@@ -2,13 +2,17 @@ import gradio as gr
 import os, shutil
 import subprocess
 
+os.environ["rmvpe_root"] = "assets/rmvpe"
+os.environ['index_root']="logs"
+os.environ['weight_root']="assets/weights"
+
 def convert(audio_picker,model_picker):
     command = [
         "python",
         "tools/infer_cli.py",
         "--f0up_key", "0",
         "--input_path", f"audios/{audio_picker}",
-        "--index_path", "",
+        "--index_path", f"logs/{model_picker}/*.index",
         "--f0method", "rmvpe",
         "--opt_path", "cli_output.wav",
         "--model_name", f"{model_picker}",
@@ -115,7 +119,10 @@ def upload_file(file):
 
 def refresh():
     return {"choices":show_available('audios'),"__type__": "update"},{"choices":show_available('assets/weights'),"__type__": "update"}
-  
+
+def update_audio_player(choice):
+    return os.path.join("audios",choice)
+
 with gr.Blocks() as app:
     with gr.Row():
         with gr.Column():
@@ -143,6 +150,8 @@ with gr.Blocks() as app:
         audio_refresher.click(fn=refresh,inputs=[],outputs=[audio_picker,model_picker])
         convert_button = gr.Button("Convert")
         convert_button.click(convert, inputs=[audio_picker,model_picker])
-        
-app.queue()
-app.launch()
+    with gr.Row():
+        audio_player = gr.Audio()
+        audio_picker.change(fn=update_audio_player, inputs=[audio_picker],outputs=[audio_player])
+
+app.queue().launch()
