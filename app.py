@@ -1,24 +1,31 @@
 import gradio as gr
 import os, shutil
-import subprocess
+import subprocess, glob
 from datetime import datetime
 os.environ["rmvpe_root"] = "assets/rmvpe"
 os.environ['index_root']="logs"
 os.environ['weight_root']="assets/weights"
 
-def convert(audio_picker,model_picker):
+def convert(audio_picker,model_picker,index_picker,index_rate):
     gr.Warning("Your audio is being converted. Please wait.")
     now = datetime.now().strftime("%d%m%Y%H%M%S")
+    index_files = glob.glob(f"logs/{index_picker}/*.index")
+    if index_files:
+        print(f"Found index: {index_files[0]}")
+    else:
+        gr.Warning("Sorry, I couldn't find your .index file.")
+        print("Did not find a matching .index file")
+        index_files = [f'logs/{model_picker}/fake_index.index']
     command = [
         "python",
         "tools/infer_cli.py",
         "--f0up_key", "0",
         "--input_path", f"audios/{audio_picker}",
-        "--index_path", f"logs/{model_picker}/*.index",
+        "--index_path", index_files[0],
         "--f0method", "rmvpe",
         "--opt_path", f"audios/cli_output_{now}.wav",
         "--model_name", f"{model_picker}",
-        "--index_rate", "0.8",
+        "--index_rate", str(float(index_rate)),
         "--device", "cpu",
         "--filter_radius", "3",
         "--resample_sr", "0",
@@ -129,7 +136,7 @@ def upload_file(file):
     return {"choices":show_available('audios'),"__type__": "update","value":filename}
 
 def refresh():
-    return {"choices":show_available("audios"),"__type__": "update"},{"choices":show_available("assets/weights",".pth"),"__type__": "update"}
+    return {"choices":show_available("audios"),"__type__": "update"},{"choices":show_available("assets/weights",".pth"),"__type__": "update"},{"choices":show_available("logs"),"__type__": "update"}
 
 def update_audio_player(choice):
     return os.path.join("audios",choice)
@@ -139,7 +146,8 @@ with gr.Blocks() as app:
         with gr.Column():
             with gr.Tabs():
                 with gr.TabItem("1.Choose a voice model:"):
-                    model_picker = gr.Dropdown(label="",choices=show_available('assets/weights','.pth'),value='',interactive=True)
+                    model_picker = gr.Dropdown(label="Model: ",choices=show_available('assets/weights','.pth'),value=show_available('assets/weights','.pth')[0],interactive=True,placeholder="Choose a VOICE MODEL here")
+                    index_picker = gr.Dropdown(label="Index:",interactive=True,choices=show_available('logs'),value=show_available('logs')[0],allow_custom_value=True)
                 with gr.TabItem("(Or download a model here)"):
                     with gr.Row():
                         url = gr.Textbox(label="Paste the URL here:",value="",placeholder="(i.e. https://huggingface.co/repo/model/resolve/main/model.zip)")
@@ -149,6 +157,8 @@ with gr.Blocks() as app:
                         with gr.Column():
                             download_button = gr.Button("Download")
                             download_button.click(fn=download_from_url,inputs=[url,model_rename],outputs=[url,model_picker])
+                with gr.TabItem("Advanced"):
+                    index_rate = gr.Slider(label='Index Rate: ',minimum=0,maximum=1,value=0.66,step=0.01)
         
     with gr.Row():
         with gr.Tabs():
@@ -160,11 +170,11 @@ with gr.Blocks() as app:
                 dropbox = gr.Audio(label="Drop an audio here.",sources=['upload'], type="filepath")
                 dropbox.upload(fn=upload_file, inputs=[dropbox],outputs=[audio_picker])
         audio_refresher = gr.Button("Refresh")
-        audio_refresher.click(fn=refresh,inputs=[],outputs=[audio_picker,model_picker])
+        audio_refresher.click(fn=refresh,inputs=[],outputs=[audio_picker,model_picker,index_picker])
         convert_button = gr.Button("Convert")
     with gr.Row():
         audio_player = gr.Audio()
         audio_picker.change(fn=update_audio_player, inputs=[audio_picker],outputs=[audio_player])
-        convert_button.click(convert, inputs=[audio_picker,model_picker],outputs=[audio_picker,audio_player])
+        convert_button.click(convert, inputs=[audio_picker,model_picker,index_picker,index_rate],outputs=[audio_picker,audio_player])
 
 app.queue().launch()
