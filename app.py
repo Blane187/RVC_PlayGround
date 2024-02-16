@@ -113,7 +113,11 @@ def show_available(filepath,format=None):
             else:
                 print(f"Does not match format: {file}")
         print(f"Matches: {files}")
+        if len(files) < 1:
+            return ['']
         return files
+    if len(os.listdir(filepath)) < 1:
+        return ['']
     return os.listdir(filepath)
   
 def upload_file(file):
@@ -142,6 +146,8 @@ def update_audio_player(choice):
     return os.path.join("audios",choice)
 
 with gr.Blocks() as app:
+    with gr.Row():
+        gr.HTML("")
     with gr.Row():
         with gr.Column():
             with gr.Tabs():
