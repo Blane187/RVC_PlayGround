@@ -147,12 +147,15 @@ def update_audio_player(choice):
 
 with gr.Blocks() as app:
     with gr.Row():
-        gr.HTML("")
+        with gr.Column():
+            gr.HTML("<img  src='file/a.png' alt='easy logo'>")
+        with gr.Column():
+            gr.HTML("<a href='https://ko-fi.com/rejekts' target='_blank'><img src='file/paypal_button.png' alt='donation button'></a>")
     with gr.Row():
         with gr.Column():
             with gr.Tabs():
                 with gr.TabItem("1.Choose a voice model:"):
-                    model_picker = gr.Dropdown(label="Model: ",choices=show_available('assets/weights','.pth'),value=show_available('assets/weights','.pth')[0],interactive=True,placeholder="Choose a VOICE MODEL here")
+                    model_picker = gr.Dropdown(label="Model: ",choices=show_available('assets/weights','.pth'),value=show_available('assets/weights','.pth')[0],interactive=True)
                     index_picker = gr.Dropdown(label="Index:",interactive=True,choices=show_available('logs'),value=show_available('logs')[0],allow_custom_value=True)
                 with gr.TabItem("(Or download a model here)"):
                     with gr.Row():
@@ -173,7 +176,7 @@ with gr.Blocks() as app:
                 audio_picker = gr.Dropdown(label="",choices=show_available('audios'),value='',interactive=True)
                 recorder.stop_recording(upload_file, inputs=[recorder],outputs=[audio_picker])
             with gr.TabItem("(Or upload a new file here)"):
-                dropbox = gr.Audio(label="Drop an audio here.",sources=['upload'], type="filepath")
+                dropbox = gr.File(label="Drop an audio here.",file_types=['.wav', '.mp3', '.ogg', '.flac', '.aac'], type="file")
                 dropbox.upload(fn=upload_file, inputs=[dropbox],outputs=[audio_picker])
         audio_refresher = gr.Button("Refresh")
         audio_refresher.click(fn=refresh,inputs=[],outputs=[audio_picker,model_picker,index_picker])
