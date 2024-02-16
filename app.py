@@ -111,6 +111,7 @@ def show_available(filepath,format=None):
   
 def upload_file(file):
     audio_formats = ['.wav', '.mp3', '.ogg', '.flac', '.aac']
+    print(file)
     try:
         _, ext = os.path.splitext(file.name)
         filename = os.path.basename(file.name)
@@ -156,7 +157,7 @@ with gr.Blocks() as app:
                 audio_picker = gr.Dropdown(label="",choices=show_available('audios'),value='',interactive=True)
                 recorder.stop_recording(upload_file, inputs=[recorder],outputs=[audio_picker])
             with gr.TabItem("(Or upload a new file here)"):
-                dropbox = gr.Audio(label="Drop an audio here.",sources=['upload'])
+                dropbox = gr.Audio(label="Drop an audio here.",sources=['upload'], type="filepath")
                 dropbox.upload(fn=upload_file, inputs=[dropbox],outputs=[audio_picker])
         audio_refresher = gr.Button("Refresh")
         audio_refresher.click(fn=refresh,inputs=[],outputs=[audio_picker,model_picker])
