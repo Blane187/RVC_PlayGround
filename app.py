@@ -61,10 +61,15 @@ for file, link in files.items():
             print(f"Error downloading {file}: {e}")
             
 def download_from_url(url, model):
+    if model =='':
+        try:
+            model = model.split('/')[-1].split('?')[0]
+        except:
+            return "You need to name your model. For example: My-Model", {"choices":show_available("assets/weights"),"__type__":"update"}
+    url=url.replace('/blob/main/','/resolve/main/')
+    model=model.replace('.pth','').replace('.index','').replace('.zip','')
     if url == '':
         return "URL cannot be left empty.", {"choices":show_available("assets/weights"),"__type__":"update"}
-    if model =='':
-        return "You need to name your model. For example: My-Model", {"choices":show_available("assets/weights"),"__type__":"update"}
     url = url.strip()
     zip_dirs = ["zips", "unzips"]
     for directory in zip_dirs:
@@ -75,6 +80,13 @@ def download_from_url(url, model):
     zipfile = model + '.zip'
     zipfile_path = './zips/' + zipfile
     try:
+        if url.endswith('.pth'):
+            subprocess.run(["wget", url, "-O", f'./assets/weights/{model}.pth'])
+            return f"Sucessfully downloaded as {model}.pth", {"choices":show_available("assets/weights"),"__type__":"update"}
+        if url.endswith('.index'):
+            if not os.path.exists(f'./logs/{model}'): os.makedirs(f'./logs/{model}')
+            subprocess.run(["wget", url, "-O", f'./logs/{model}/added_{model}.index'])
+            return f"Successfully downloaded as added_{model}.index", {"choices":show_available("assets/weights"),"__type__":"update"}
         if "drive.google.com" in url:
             subprocess.run(["gdown", url, "--fuzzy", "-O", zipfile_path])
         elif "mega.nz" in url:
@@ -101,7 +113,7 @@ def download_from_url(url, model):
         return "Success.", {"choices":show_available("assets/weights"),"__type__":"update"}
     except:
         return "There's been an error.", {"choices":show_available("assets/weights"),"__type__":"update"}
-            
+
 def show_available(filepath,format=None):
     if format:
         print(f"Format: {format}")
