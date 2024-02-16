@@ -148,9 +148,9 @@ def update_audio_player(choice):
 with gr.Blocks() as app:
     with gr.Row():
         with gr.Column():
-            gr.HTML("<img  src='file/a.png' alt='easy logo'>")
+            gr.HTML("<img  src='file/a.png' alt='easy>")
         with gr.Column():
-            gr.HTML("<a href='https://ko-fi.com/rejekts' target='_blank'><img src='file/kofi_button.png' alt='donation button'></a>")
+            gr.HTML("<a href='https://ko-fi.com/rejekts' target='_blank'><img src='file/kofi_button.png' alt='Support Me'></a>")
     with gr.Row():
         with gr.Column():
             with gr.Tabs():
