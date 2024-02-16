@@ -63,11 +63,12 @@ for file, link in files.items():
 def download_from_url(url, model):
     if model =='':
         try:
-            model = model.split('/')[-1].split('?')[0]
+            model = url.split('/')[-1].split('?')[0]
         except:
             return "You need to name your model. For example: My-Model", {"choices":show_available("assets/weights"),"__type__":"update"}
     url=url.replace('/blob/main/','/resolve/main/')
     model=model.replace('.pth','').replace('.index','').replace('.zip','')
+    print(f"Model name: {model}")
     if url == '':
         return "URL cannot be left empty.", {"choices":show_available("assets/weights"),"__type__":"update"}
     url = url.strip()
@@ -83,7 +84,7 @@ def download_from_url(url, model):
         if url.endswith('.pth'):
             subprocess.run(["wget", url, "-O", f'./assets/weights/{model}.pth'])
             return f"Sucessfully downloaded as {model}.pth", {"choices":show_available("assets/weights"),"__type__":"update"}
-        if url.endswith('.index'):
+        elif url.endswith('.index'):
             if not os.path.exists(f'./logs/{model}'): os.makedirs(f'./logs/{model}')
             subprocess.run(["wget", url, "-O", f'./logs/{model}/added_{model}.index'])
             return f"Successfully downloaded as added_{model}.index", {"choices":show_available("assets/weights"),"__type__":"update"}
