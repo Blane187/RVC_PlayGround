@@ -148,14 +148,14 @@ def update_audio_player(choice):
 with gr.Blocks() as app:
     with gr.Row():
         with gr.Column():
-            gr.HTML("<img  src='./a.png' alt='easy>")
+            gr.HTML("<img  src='file/a.png' alt='easy>")
         with gr.Column():
-            gr.HTML("<a href='https://ko-fi.com/rejekts' target='_blank'><img src='./kofi_button.png' alt='Support Me'></a>")
+            gr.HTML("<a href='https://ko-fi.com/rejekts' target='_blank'><img src='file/kofi_button.png' alt='Support Me'></a>")
     with gr.Row():
         with gr.Column():
             with gr.Tabs():
                 with gr.TabItem("1.Choose a voice model:"):
-                    model_picker = gr.Dropdown(label="Model: ",choices=show_available('assets/weights','.pth'),value=show_available('assets/weights','.pth')[0],interactive=True)
+                    model_picker = gr.Dropdown(label="Model: ",choices=show_available('assets/weights','.pth'),value=show_available('assets/weights','.pth')[0],interactive=True,allow_custom_value=True)
                     index_picker = gr.Dropdown(label="Index:",interactive=True,choices=show_available('logs'),value=show_available('logs')[0],allow_custom_value=True)
                 with gr.TabItem("(Or download a model here)"):
                     with gr.Row():
