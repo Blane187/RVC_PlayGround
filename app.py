@@ -150,7 +150,7 @@ with gr.Blocks() as app:
         with gr.Column():
             gr.HTML("<img  src='file/a.png' alt='easy logo'>")
         with gr.Column():
-            gr.HTML("<a href='https://ko-fi.com/rejekts' target='_blank'><img src='file/paypal_button.png' alt='donation button'></a>")
+            gr.HTML("<a href='https://ko-fi.com/rejekts' target='_blank'><img src='file/kofi_button.png' alt='donation button'></a>")
     with gr.Row():
         with gr.Column():
             with gr.Tabs():
