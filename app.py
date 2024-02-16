@@ -6,7 +6,7 @@ os.environ["rmvpe_root"] = "assets/rmvpe"
 os.environ['index_root']="logs"
 os.environ['weight_root']="assets/weights"
 
-def convert(audio_picker,model_picker,index_picker,index_rate):
+def convert(audio_picker,model_picker,index_picker,index_rate,pitch):
     gr.Warning("Your audio is being converted. Please wait.")
     now = datetime.now().strftime("%d%m%Y%H%M%S")
     index_files = glob.glob(f"logs/{index_picker}/*.index")
@@ -19,7 +19,7 @@ def convert(audio_picker,model_picker,index_picker,index_rate):
     command = [
         "python",
         "tools/infer_cli.py",
-        "--f0up_key", "0",
+        "--f0up_key", str(pitch),
         "--input_path", f"audios/{audio_picker}",
         "--index_path", index_files[0],
         "--f0method", "rmvpe",
@@ -148,9 +148,9 @@ def update_audio_player(choice):
 with gr.Blocks() as app:
     with gr.Row():
         with gr.Column():
-            gr.HTML("<img  src='file/a.png' alt='easy>")
+            gr.HTML("<img  src='./a.png' alt='easy>")
         with gr.Column():
-            gr.HTML("<a href='https://ko-fi.com/rejekts' target='_blank'><img src='file/kofi_button.png' alt='Support Me'></a>")
+            gr.HTML("<a href='https://ko-fi.com/rejekts' target='_blank'><img src='./kofi_button.png' alt='Support Me'></a>")
     with gr.Row():
         with gr.Column():
             with gr.Tabs():
@@ -168,6 +168,7 @@ with gr.Blocks() as app:
                             download_button.click(fn=download_from_url,inputs=[url,model_rename],outputs=[url,model_picker])
                 with gr.TabItem("Advanced"):
                     index_rate = gr.Slider(label='Index Rate: ',minimum=0,maximum=1,value=0.66,step=0.01)
+                    pitch = gr.Slider(label='Pitch (-12 lowers it an octave, 0 keeps the original pitch, 12 lifts it an octave): ',minimum =-12, maximum=12, step=1, value=0, interactive=True)
         
     with gr.Row():
         with gr.Tabs():
@@ -184,6 +185,6 @@ with gr.Blocks() as app:
     with gr.Row():
         audio_player = gr.Audio()
         audio_picker.change(fn=update_audio_player, inputs=[audio_picker],outputs=[audio_player])
-        convert_button.click(convert, inputs=[audio_picker,model_picker,index_picker,index_rate],outputs=[audio_picker,audio_player])
+        convert_button.click(convert, inputs=[audio_picker,model_picker,index_picker,index_rate,pitch],outputs=[audio_picker,audio_player])
 
 app.queue().launch()
