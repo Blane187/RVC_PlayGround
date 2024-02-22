@@ -2,28 +2,16 @@ import gradio as gr
 import os, shutil
 import subprocess, glob
 from datetime import datetime
+from tools.useftools import *
 os.environ["rmvpe_root"] = "assets/rmvpe"
 os.environ['index_root']="logs"
 os.environ['weight_root']="assets/weights"
 from infer.modules.vc.modules import VC
 from configs.config import Config
 import torch
-import pandas as pd
 
 config = Config()
 vc = VC(config)
-
-URL = "https://docs.google.com/spreadsheets/d/1tAUaQrEHYgRsm1Lvrnj14HFHDwJWl0Bd9x0QePewNco/edit#gid=1977693859"
-csv_url = URL.replace('/edit#gid=', '/export?format=csv&gid=')
-if os.path.exists("spreadsheet.csv"):
-    cached_data = pd.read_csv("spreadsheet.csv")
-else:
-    cached_data = pd.read_csv(csv_url)
-    cached_data.to_csv("spreadsheet.csv", index=False)
-models = {}
-
-for url, filename in zip(cached_data['URL'], cached_data['Filename']):
-    models[filename] = url
 
 def load_model(model_picker,index_picker):
     logs = show_available("logs")
