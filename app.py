@@ -5,8 +5,23 @@ from datetime import datetime
 os.environ["rmvpe_root"] = "assets/rmvpe"
 os.environ['index_root']="logs"
 os.environ['weight_root']="assets/weights"
+from infer.modules.vc.modules import VC
+from configs.config import Config
+import torch
+config = Config()
+vc = VC(config)
 
-def convert(audio_picker,model_picker,index_picker,index_rate,pitch):
+def load_model(model_picker,index_picker):
+    logs = show_available("logs")
+    if model_picker.replace(".pth","") in logs:
+        log = model_picker.replace(".pth","")
+    else:
+        log = index_picker
+        gr.Warning("Could not find a matching index file.")
+    vc.get_vc(model_picker,0,0)
+    return {"choices":logs,"value":log,"__type__": "update"}
+
+def convert(audio_picker,model_picker,index_picker,index_rate,pitch,method):
     gr.Warning("Your audio is being converted. Please wait.")
     now = datetime.now().strftime("%d%m%Y%H%M%S")
     index_files = glob.glob(f"logs/{index_picker}/*.index")
@@ -16,20 +31,21 @@ def convert(audio_picker,model_picker,index_picker,index_rate,pitch):
         gr.Warning("Sorry, I couldn't find your .index file.")
         print("Did not find a matching .index file")
         index_files = [f'logs/{model_picker}/fake_index.index']
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     command = [
         "python",
         "tools/infer_cli.py",
         "--f0up_key", str(pitch),
         "--input_path", f"audios/{audio_picker}",
         "--index_path", index_files[0],
-        "--f0method", "rmvpe",
+        "--f0method", method,
         "--opt_path", f"audios/cli_output_{now}.wav",
         "--model_name", f"{model_picker}",
         "--index_rate", str(float(index_rate)),
-        "--device", "cpu",
+        "--device", device,
         "--filter_radius", "3",
         "--resample_sr", "0",
-        "--rms_mix_rate", "0.21",
+        "--rms_mix_rate", "0.0",
         "--protect", "0"
     ]
 
@@ -161,7 +177,7 @@ def update_audio_player(choice):
 with gr.Blocks() as app:
     with gr.Row():
         with gr.Column():
-            gr.HTML("<img  src='file/a.png' alt='easy>")
+            gr.HTML("<div><img  src='file/a.png' alt='easyGUI'></div>")
         with gr.Column():
             gr.HTML("<a href='https://ko-fi.com/rejekts' target='_blank'><img src='file/kofi_button.png' alt='Support Me'></a>")
     with gr.Row():
@@ -170,6 +186,7 @@ with gr.Blocks() as app:
                 with gr.TabItem("1.Choose a voice model:"):
                     model_picker = gr.Dropdown(label="Model: ",choices=show_available('assets/weights','.pth'),value=show_available('assets/weights','.pth')[0],interactive=True,allow_custom_value=True)
                     index_picker = gr.Dropdown(label="Index:",interactive=True,choices=show_available('logs'),value=show_available('logs')[0],allow_custom_value=True)
+                    model_picker.change(fn=load_model,inputs=[model_picker,index_picker],outputs=[index_picker])
                 with gr.TabItem("(Or download a model here)"):
                     with gr.Row():
                         url = gr.Textbox(label="Paste the URL here:",value="",placeholder="(i.e. https://huggingface.co/repo/model/resolve/main/model.zip)")
@@ -182,6 +199,7 @@ with gr.Blocks() as app:
                 with gr.TabItem("Advanced"):
                     index_rate = gr.Slider(label='Index Rate: ',minimum=0,maximum=1,value=0.66,step=0.01)
                     pitch = gr.Slider(label='Pitch (-12 lowers it an octave, 0 keeps the original pitch, 12 lifts it an octave): ',minimum =-12, maximum=12, step=1, value=0, interactive=True)
+                    method = gr.Dropdown(label="Method:",choices=["rmvpe","pm"],value="rmvpe")
         
     with gr.Row():
         with gr.Tabs():
@@ -197,7 +215,8 @@ with gr.Blocks() as app:
         convert_button = gr.Button("Convert")
     with gr.Row():
         audio_player = gr.Audio()
+        inputs = [audio_picker,model_picker,index_picker,index_rate,pitch,method]
         audio_picker.change(fn=update_audio_player, inputs=[audio_picker],outputs=[audio_player])
-        convert_button.click(convert, inputs=[audio_picker,model_picker,index_picker,index_rate,pitch],outputs=[audio_picker,audio_player])
+        convert_button.click(convert, inputs=inputs,outputs=[audio_picker,audio_player])
 
 app.queue().launch()
