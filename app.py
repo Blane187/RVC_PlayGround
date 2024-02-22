@@ -8,8 +8,22 @@ os.environ['weight_root']="assets/weights"
 from infer.modules.vc.modules import VC
 from configs.config import Config
 import torch
+import pandas as pd
+
 config = Config()
 vc = VC(config)
+
+URL = "https://docs.google.com/spreadsheets/d/1tAUaQrEHYgRsm1Lvrnj14HFHDwJWl0Bd9x0QePewNco/edit#gid=1977693859"
+csv_url = URL.replace('/edit#gid=', '/export?format=csv&gid=')
+if os.path.exists("spreadsheet.csv"):
+    cached_data = pd.read_csv("spreadsheet.csv")
+else:
+    cached_data = pd.read_csv(csv_url)
+    cached_data.to_csv("spreadsheet.csv", index=False)
+models = {}
+
+for url, filename in zip(cached_data['URL'], cached_data['Filename']):
+    models[filename] = url
 
 def load_model(model_picker,index_picker):
     logs = show_available("logs")
@@ -75,7 +89,7 @@ for file, link in files.items():
             subprocess.run(['wget', link, '-O', file_path], check=True)
         except subprocess.CalledProcessError as e:
             print(f"Error downloading {file}: {e}")
-            
+
 def download_from_url(url, model):
     if model =='':
         try:
@@ -115,21 +129,80 @@ def download_from_url(url, model):
             if filename.endswith(".zip"):
                 zipfile_path = os.path.join("./zips/",filename)
                 shutil.unpack_archive(zipfile_path, "./unzips", 'zip')
+                for root, dirs, files in os.walk('./unzips'):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        if file.endswith(".index"):
+                            os.mkdir(f'./logs/{model}')
+                            shutil.copy2(file_path,f'./logs/{model}')
+                        elif "G_" not in file and "D_" not in file and file.endswith(".pth"):
+                            shutil.copy(file_path,f'./assets/weights/{model}.pth')
+            elif filename.endswith(".pth"):
+                shutil.copy2(os.path.join("./zips/",filename),f'./assets/weights/{model}.pth')
+            elif filename.endswith(".index"):
+                os.mkdir(f'./logs/{model}')
+                shutil.copy2(os.path.join("./zips/",filename),f'./logs/{model}/')
             else:
                 return "No zipfile found.", {"choices":show_available("assets/weights"),"__type__":"update"}
-        for root, dirs, files in os.walk('./unzips'):
-            for file in files:
-                file_path = os.path.join(root, file)
-                if file.endswith(".index"):
-                    os.mkdir(f'./logs/{model}')
-                    shutil.copy2(file_path,f'./logs/{model}')
-                elif "G_" not in file and "D_" not in file and file.endswith(".pth"):
-                    shutil.copy(file_path,f'./assets/weights/{model}.pth')
         shutil.rmtree("zips")
         shutil.rmtree("unzips")
         return "Success.", {"choices":show_available("assets/weights"),"__type__":"update"}
     except:
         return "There's been an error.", {"choices":show_available("assets/weights"),"__type__":"update"}
+
+def import_from_name(model):
+    try:
+        url = models[f'{model}']
+    except:
+        return "", {"__type__":"update"}
+    url=url.replace('/blob/main/','/resolve/main/')
+    print(f"Model name: {model}")
+    if url == '':
+        return "", {"__type__":"update"}
+    url = url.strip()
+    zip_dirs = ["zips", "unzips"]
+    for directory in zip_dirs:
+        if os.path.exists(directory):
+            shutil.rmtree(directory)
+    os.makedirs("zips", exist_ok=True)
+    os.makedirs("unzips", exist_ok=True)
+    zipfile = model + '.zip'
+    zipfile_path = './zips/' + zipfile
+    try:
+        if url.endswith('.pth'):
+            subprocess.run(["wget", url, "-O", f'./assets/weights/{model}.pth'])
+            return f"", {"choices":show_available("assets/weights"),"__type__":"update","value":f"{model}.pth"}
+        if "drive.google.com" in url:
+            subprocess.run(["gdown", url, "--fuzzy", "-O", zipfile_path])
+        elif "mega.nz" in url:
+            m = Mega()
+            m.download_url(url, './zips')
+        else:
+            subprocess.run(["wget", url, "-O", zipfile_path])
+        for filename in os.listdir("./zips"):
+            if filename.endswith(".zip"):
+                zipfile_path = os.path.join("./zips/",filename)
+                shutil.unpack_archive(zipfile_path, "./unzips", 'zip')
+                for root, dirs, files in os.walk('./unzips'):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        if file.endswith(".index"):
+                            os.mkdir(f'./logs/{model}')
+                            shutil.copy2(file_path,f'./logs/{model}')
+                        elif "G_" not in file and "D_" not in file and file.endswith(".pth"):
+                            shutil.copy(file_path,f'./assets/weights/{model}.pth')
+            elif filename.endswith(".pth"):
+                shutil.copy2(os.path.join("./zips/",filename),f'./assets/weights/{model}.pth')
+            elif filename.endswith(".index"):
+                os.mkdir(f'./logs/{model}')
+                shutil.copy2(os.path.join("./zips/",filename),f'./logs/{model}/')
+            else:
+                return "", {"__type__":"update"}
+        shutil.rmtree("zips")
+        shutil.rmtree("unzips")
+        return "", {"choices":show_available("assets/weights"),"__type__":"update","value":f"{model}.pth"}
+    except:
+        return "", {"__type__":"update"}
 
 def show_available(filepath,format=None):
     if format:
@@ -177,9 +250,9 @@ def update_audio_player(choice):
 with gr.Blocks() as app:
     with gr.Row():
         with gr.Column():
-            gr.HTML("<div><img  src='file/a.png' alt='easyGUI'></div>")
+            gr.Markdown("# 📱 EasyGUI PlayGround")
         with gr.Column():
-            gr.HTML("<a href='https://ko-fi.com/rejekts' target='_blank'><img src='file/kofi_button.png' alt='Support Me'></a>")
+            gr.HTML("<a href='https://ko-fi.com/rejekts' target='_blank'><img src='file/kofi_button.png' alt='🤝 Support Me'></a>")
     with gr.Row():
         with gr.Column():
             with gr.Tabs():
@@ -196,6 +269,10 @@ with gr.Blocks() as app:
                         with gr.Column():
                             download_button = gr.Button("Download")
                             download_button.click(fn=download_from_url,inputs=[url,model_rename],outputs=[url,model_picker])
+                    with gr.Row():
+                        selected_import = gr.Dropdown(choices=list(models.keys())[:999],label="OR Search Models (Quality UNKNOWN)",scale=5)
+                        import_model = gr.Button("Download")
+                        import_model.click(fn=import_from_name,inputs=[selected_import],outputs=[selected_import,model_picker])
                 with gr.TabItem("Advanced"):
                     index_rate = gr.Slider(label='Index Rate: ',minimum=0,maximum=1,value=0.66,step=0.01)
                     pitch = gr.Slider(label='Pitch (-12 lowers it an octave, 0 keeps the original pitch, 12 lifts it an octave): ',minimum =-12, maximum=12, step=1, value=0, interactive=True)
@@ -219,4 +296,4 @@ with gr.Blocks() as app:
         audio_picker.change(fn=update_audio_player, inputs=[audio_picker],outputs=[audio_player])
         convert_button.click(convert, inputs=inputs,outputs=[audio_picker,audio_player])
 
-app.queue().launch()
+app.queue().launch(debug=True)
