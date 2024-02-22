@@ -238,7 +238,7 @@ def update_audio_player(choice):
 with gr.Blocks() as app:
     with gr.Row():
         with gr.Column():
-            gr.Markdown("# 📱 EasyGUI PlayGround")
+            gr.Markdown("# RVC PlayGround 🎮")
         with gr.Column():
             gr.HTML("<a href='https://ko-fi.com/rejekts' target='_blank'><img src='file/kofi_button.png' alt='🤝 Support Me'></a>")
     with gr.Row():
