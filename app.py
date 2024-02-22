@@ -284,4 +284,4 @@ with gr.Blocks() as app:
         audio_picker.change(fn=update_audio_player, inputs=[audio_picker],outputs=[audio_player])
         convert_button.click(convert, inputs=inputs,outputs=[audio_picker,audio_player])
 
-app.queue().launch(debug=True)
+app.queue(max_size=20).launch(debug=True)
