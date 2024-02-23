@@ -9,9 +9,13 @@ os.environ['weight_root']="assets/weights"
 from infer.modules.vc.modules import VC
 from configs.config import Config
 import torch
-
+os.makedirs(os.path.join(".", "audios"), exist_ok=True)
 config = Config()
 vc = VC(config)
+
+def warn(text):
+    try: gr.Warning(text)
+    except: pass
 
 def load_model(model_picker,index_picker):
     logs = show_available("logs")
@@ -19,18 +23,18 @@ def load_model(model_picker,index_picker):
         log = model_picker.replace(".pth","")
     else:
         log = index_picker
-        gr.Warning("Could not find a matching index file.")
+        warn("Could not find a matching index file.")
     vc.get_vc(model_picker,0,0)
     return {"choices":logs,"value":log,"__type__": "update"}
 
 def convert(audio_picker,model_picker,index_picker,index_rate,pitch,method):
-    gr.Warning("Your audio is being converted. Please wait.")
+    warn("Your audio is being converted. Please wait.")
     now = datetime.now().strftime("%d%m%Y%H%M%S")
     index_files = glob.glob(f"logs/{index_picker}/*.index")
     if index_files:
         print(f"Found index: {index_files[0]}")
     else:
-        gr.Warning("Sorry, I couldn't find your .index file.")
+        warn("Sorry, I couldn't find your .index file.")
         print("Did not find a matching .index file")
         index_files = [f'logs/{model_picker}/fake_index.index']
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -226,7 +230,7 @@ def upload_file(file):
             os.remove(f'audios/{filename}')
         shutil.move(file_path,'audios')
     else:
-        gr.Warning('File incompatible')
+        warn('File incompatible')
     return {"choices":show_available('audios'),"__type__": "update","value":filename}
 
 def refresh():
@@ -271,9 +275,15 @@ with gr.Blocks() as app:
             with gr.TabItem("2.Choose an audio file:"):
                 recorder = gr.Microphone(label="Record audio here...",type='filepath')
                 audio_picker = gr.Dropdown(label="",choices=show_available('audios'),value='',interactive=True)
-                recorder.stop_recording(upload_file, inputs=[recorder],outputs=[audio_picker])
+                try:
+                    recorder.stop_recording(upload_file, inputs=[recorder],outputs=[audio_picker])
+                except:
+                    recorder.upload(upload_file, inputs=[recorder],outputs=[audio_picker])
             with gr.TabItem("(Or upload a new file here)"):
-                dropbox = gr.File(label="Drop an audio here.",file_types=['.wav', '.mp3', '.ogg', '.flac', '.aac'], type="filepath")
+                try:
+                    dropbox = gr.File(label="Drop an audio here.",file_types=['.wav', '.mp3', '.ogg', '.flac', '.aac'], type="filepath")
+                except:#Version Compatibiliy
+                    dropbox = gr.File(label="Drop an audio here.",file_types=['.wav', '.mp3', '.ogg', '.flac', '.aac'], type="file")
                 dropbox.upload(fn=upload_file, inputs=[dropbox],outputs=[audio_picker])
         audio_refresher = gr.Button("Refresh")
         audio_refresher.click(fn=refresh,inputs=[],outputs=[audio_picker,model_picker,index_picker])
@@ -284,4 +294,4 @@ with gr.Blocks() as app:
         audio_picker.change(fn=update_audio_player, inputs=[audio_picker],outputs=[audio_player])
         convert_button.click(convert, inputs=inputs,outputs=[audio_picker,audio_player])
 
-app.queue(max_size=20).launch(debug=True)
+app.queue(max_size=20).launch(debug=True,share=True)
