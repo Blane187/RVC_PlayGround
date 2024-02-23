@@ -1,4 +1,4 @@
-gradio
+gradio==4.19.2
 torch
 torchvision
 torchaudio
