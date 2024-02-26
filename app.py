@@ -262,7 +262,7 @@ with gr.Blocks() as app:
                             download_button = gr.Button("Download")
                             download_button.click(fn=download_from_url,inputs=[url,model_rename],outputs=[url,model_picker])
                     with gr.Row():
-                        selected_import = gr.Dropdown(choices=list(models.keys())[:999],label="OR Search Models (Quality UNKNOWN)",scale=5)
+                        selected_import = gr.Dropdown(choices=list(models.keys())[:9999],label="OR Search Models (Quality UNKNOWN)",scale=5)
                         import_model = gr.Button("Download")
                         import_model.click(fn=import_from_name,inputs=[selected_import],outputs=[selected_import,model_picker])
                 with gr.TabItem("Advanced"):
