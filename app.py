@@ -266,7 +266,7 @@ with gr.Blocks(theme='Hev832/EasyAndCool', title="RVC") as app:
                 with gr.TabItem("Advanced"):
                     index_rate = gr.Slider(label='Index Rate: ',minimum=0,maximum=1,value=0.66,step=0.01)
                     pitch = gr.Slider(label='Pitch (-12 lowers it an octave, 0 keeps the original pitch, 12 lifts it an octave): ',minimum =-12, maximum=12, step=1, value=0, interactive=True)
-                    method = gr.Dropdown(label="Method:",choices=["rmvpe","pm"],value="rmvpe")
+                    method = gr.Dropdown(label="Method:",choices=["rmvpe","pm", "fcpe", "crepe"],value="rmvpe")
         
     with gr.Row():
         with gr.Tabs():
