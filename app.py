@@ -240,11 +240,12 @@ def update_audio_player(choice):
     return os.path.join("audios",choice)
 
 with gr.Blocks(theme='Hev832/EasyAndCool', title="RVC") as app:
-
-        gr.Label('RVC_PlayGround 🎮', show_label=False)
-
+   with gr.Row():
+        with gr.Column():
+            gr.Markdown("# RVC PlayGround 🎮")
     with gr.Row():
         with gr.Column():
+            with gr.Tabs():
             with gr.Tabs():
                 with gr.TabItem("1.Choose a voice model:"):
                     model_picker = gr.Dropdown(label="Model: ",choices=show_available('assets/weights','.pth'),value=show_available('assets/weights','.pth')[0],interactive=True,allow_custom_value=True)
