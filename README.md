@@ -1,4 +1,4 @@
-# EasyGUI
+# RVC_PlayGround
 
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ Here is a tutorial: https://www.youtube.com/watch?v=3Wa5DsJAv3c&t=1s
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-If you like RVC, please consider donating to Rejekts 
+If you like RVC_PlayGround, please consider donating to Rejekts 
 here: https://ko-fi.com/rejekts
 
 or here: https://www.paypal.com/paypalme/lesantillan
@@ -31,4 +31,4 @@ If I reach Rejekts $100 goal, he can spend a whole 8 hour day coding to fix any 
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Thank you for checking out RVC.
+Thank you for checking out RVC_PlayGround.
