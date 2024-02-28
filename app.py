@@ -239,12 +239,10 @@ def refresh():
 def update_audio_player(choice):
     return os.path.join("audios",choice)
 
-with gr.Blocks() as app:
-    with gr.Row():
-        with gr.Column():
-            gr.Markdown("# RVC PlayGround 🎮")
-        with gr.Column():
-            gr.HTML("<a href='https://ko-fi.com/rejekts' target='_blank'><img src='file/kofi_button.png' alt='🤝 Support Me'></a>")
+with gr.Blocks(theme='Hev832/EasyAndCool', title="RVC") as app:
+
+        gr.Label('RVC_PlayGround 🎮', show_label=False)
+
     with gr.Row():
         with gr.Column():
             with gr.Tabs():
@@ -294,4 +292,4 @@ with gr.Blocks() as app:
         audio_picker.change(fn=update_audio_player, inputs=[audio_picker],outputs=[audio_player])
         convert_button.click(convert, inputs=inputs,outputs=[audio_picker,audio_player])
 
-app.queue(max_size=20).launch(debug=True,share=True)
+app.queue(max_size=20).launch(share=True)
