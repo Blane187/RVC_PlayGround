@@ -239,13 +239,12 @@ def refresh():
 def update_audio_player(choice):
     return os.path.join("audios",choice)
 
-with gr.Blocks(theme='Hev832/EasyAndCool', title="RVC") as app:
-   with gr.Row():
-        with gr.Column():
+with gr.Blocks() as app:
+    with gr.Row():
+        with gr.Column(theme='Hev832/EasyAndCool', titlle="RVC"):
             gr.Markdown("# RVC PlayGround 🎮")
     with gr.Row():
         with gr.Column():
-            with gr.Tabs():
             with gr.Tabs():
                 with gr.TabItem("1.Choose a voice model:"):
                     model_picker = gr.Dropdown(label="Model: ",choices=show_available('assets/weights','.pth'),value=show_available('assets/weights','.pth')[0],interactive=True,allow_custom_value=True)
@@ -267,7 +266,7 @@ with gr.Blocks(theme='Hev832/EasyAndCool', title="RVC") as app:
                 with gr.TabItem("Advanced"):
                     index_rate = gr.Slider(label='Index Rate: ',minimum=0,maximum=1,value=0.66,step=0.01)
                     pitch = gr.Slider(label='Pitch (-12 lowers it an octave, 0 keeps the original pitch, 12 lifts it an octave): ',minimum =-12, maximum=12, step=1, value=0, interactive=True)
-                    method = gr.Dropdown(label="Method:",choices=["rmvpe","pm", "fcpe", "crepe"],value="rmvpe")
+                    method = gr.Dropdown(label="Method:",choices=["rmvpe","crepe","dio"],value="rmvpe")
         
     with gr.Row():
         with gr.Tabs():
@@ -293,4 +292,4 @@ with gr.Blocks(theme='Hev832/EasyAndCool', title="RVC") as app:
         audio_picker.change(fn=update_audio_player, inputs=[audio_picker],outputs=[audio_player])
         convert_button.click(convert, inputs=inputs,outputs=[audio_picker,audio_player])
 
-app.queue(max_size=20).launch(share=True)
+app.queue(max_size=20).launch(debug=True,share=True)
