@@ -1,7 +1,8 @@
- #@markdown # download model
- import os
+import os
 from pathlib import Path
 import requests
+from IPython.display import clear_output
+
 
 RVC_DOWNLOAD_LINK = "https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/"
 
@@ -76,5 +77,6 @@ if __name__ == "__main__":
     for model in model_names:
         print(f"Downloading {model}...")
         dl_model(RVC_DOWNLOAD_LINK + "uvr5_weights/", model, rvc_models_dir)
-
+     
+    clear_output()
     print("All models downloaded!")
